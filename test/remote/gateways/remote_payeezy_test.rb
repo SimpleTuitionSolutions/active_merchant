@@ -4,6 +4,7 @@ class RemotePayeezyTest < Test::Unit::TestCase
   def setup
     @gateway = PayeezyGateway.new(fixtures(:payeezy))
     @credit_card = credit_card
+    @token_card = token_card
     @bad_credit_card = credit_card('4111111111111113')
     @check = check
     @amount = 100
@@ -28,6 +29,12 @@ class RemotePayeezyTest < Test::Unit::TestCase
 
   def test_successful_purchase
     assert response = @gateway.purchase(@amount, @credit_card, @options)
+    assert_match(/Transaction Normal/, response.message)
+    assert_success response
+  end
+
+  def test_success_purchase_with_tokencard
+    assert response = @gateway.purchase(@amount, @token_card, @options)
     assert_match(/Transaction Normal/, response.message)
     assert_success response
   end
@@ -85,7 +92,18 @@ class RemotePayeezyTest < Test::Unit::TestCase
     assert_match(/Transaction Normal/, purchase.message)
     assert_success purchase
 
-    assert response = @gateway.refund(50, purchase.authorization)
+    assert response = @gateway.refund(50, purchase.authorization, nil)
+    assert_success response
+    assert_match(/Transaction Normal/, response.message)
+    assert response.authorization
+  end
+
+  def test_successful_refund_with_tokencard
+    assert purchase = @gateway.purchase(@amount, @token_card, @options)
+    assert_match(/Transaction Normal/, purchase.message)
+    assert_success purchase
+
+    assert response = @gateway.refund(50, purchase.authorization, @token_card)
     assert_success response
     assert_match(/Transaction Normal/, response.message)
     assert response.authorization
@@ -96,7 +114,7 @@ class RemotePayeezyTest < Test::Unit::TestCase
     assert_match(/Transaction Normal/, purchase.message)
     assert_success purchase
 
-    assert response = @gateway.refund(50, purchase.authorization)
+    assert response = @gateway.refund(50, purchase.authorization, nil)
     assert_success response
     assert_match(/Transaction Normal/, response.message)
     assert response.authorization
@@ -106,7 +124,7 @@ class RemotePayeezyTest < Test::Unit::TestCase
     purchase = @gateway.purchase(@amount, @credit_card, @options)
     assert_success purchase
 
-    assert refund = @gateway.refund(@amount-1, purchase.authorization)
+    assert refund = @gateway.refund(@amount-1, purchase.authorization, nil)
     assert_success refund
   end
 
@@ -115,7 +133,7 @@ class RemotePayeezyTest < Test::Unit::TestCase
     assert_match(/Transaction Normal/, purchase.message)
     assert_success purchase
 
-    assert response = @gateway.refund(50, "bad-authorization")
+    assert response = @gateway.refund(50, "bad-authorization", nil)
     assert_failure response
     assert_match(/The transaction tag is not provided/, response.message)
     assert response.authorization

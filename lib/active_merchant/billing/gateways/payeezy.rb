@@ -64,11 +64,13 @@ module ActiveMerchant
         commit(params, options)
       end
 
-      def refund(amount, authorization, options = {})
+      def refund(amount, authorization, payment_method, options = {})
         params = {transaction_type: 'refund'}
 
         add_authorization_info(params, authorization)
         add_amount(params, (amount || amount_from_authorization(authorization)), options)
+
+        add_tokencard(params, payment_method) if payment_method.is_a? TokenCard
 
         commit(params, options)
       end
@@ -122,9 +124,22 @@ module ActiveMerchant
       def add_payment_method(params, payment_method, options)
         if payment_method.is_a? Check
           add_echeck(params, payment_method, options)
+        elsif payment_method.is_a? TokenCard
+          add_tokencard(params, payment_method)
         else
           add_creditcard(params, payment_method)
         end
+      end
+
+      def add_tokencard(params, tokencard)
+        token_card = {token_type: 'FDToken', token_data: {}}
+        token_card[:token_data][:type] = CREDIT_CARD_BRAND[tokencard.brand]
+        token_card[:token_data][:value] = tokencard.token
+        token_card[:token_data][:cardholder_name] = tokencard.name
+        token_card[:token_data][:exp_date] = "#{format(tokencard.month, :two_digits)}#{format(tokencard.year, :two_digits)}"
+
+        params[:method] = 'token'
+        params[:token] = token_card
       end
 
       def add_creditcard(params, creditcard)

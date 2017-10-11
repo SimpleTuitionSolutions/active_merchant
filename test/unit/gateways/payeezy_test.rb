@@ -13,6 +13,7 @@ class PayeezyGateway < Test::Unit::TestCase
 
     @credit_card = credit_card
     @check = check
+    @token_card = token_card
     @amount = 100
     @options = {
       :billing_address => address
@@ -55,6 +56,15 @@ class PayeezyGateway < Test::Unit::TestCase
     assert response = @gateway.purchase(@amount, @credit_card, @options)
     assert_success response
     assert_equal 'ET114541|55083431|credit_card|1', response.authorization
+    assert response.test?
+    assert_equal 'Transaction Normal - Approved', response.message
+  end
+
+  def test_successful_purchase_with_token_card
+    @gateway.expects(:ssl_post).returns(successful_purchase_tokencard_response)
+    assert response = @gateway.purchase(@amount, @token_card, @options)
+    assert_success response
+    assert_equal 'ET114541|55083431|token|100', response.authorization
     assert response.test?
     assert_equal 'Transaction Normal - Approved', response.message
   end
@@ -353,6 +363,12 @@ class PayeezyGateway < Test::Unit::TestCase
   def successful_purchase_response
     <<-RESPONSE
     {\"method\":\"credit_card\",\"amount\":\"1\",\"currency\":\"USD\",\"avs\":\"4\",\"card\":{\"type\":\"Visa\",\"cardholder_name\":\"Bobsen 995\",\"card_number\":\"4242\",\"exp_date\":\"0816\"},\"token\":{\"token_type\":\"transarmor\",\"token_data\":{\"value\":\"0152552999534242\"}},\"transaction_status\":\"approved\",\"validation_status\":\"success\",\"transaction_type\":\"purchase\",\"transaction_id\":\"ET114541\",\"transaction_tag\":\"55083431\",\"bank_resp_code\":\"100\",\"bank_message\":\"Approved\",\"gateway_resp_code\":\"00\",\"gateway_message\":\"Transaction Normal\",\"correlation_id\":\"124.1433862672836\"}
+    RESPONSE
+  end
+
+  def successful_purchase_tokencard_response
+    <<-RESPONSE
+    {\"method\":\"token\",\"amount\":\"100\",\"currency\":\"USD\",\"token\":{\"token_type\":\"FDToken\",\"token_data\":{\"type\":\"visa\",\"cardholder_name\":\"George McGeorgeson\",\"value\":\"8103301550498291\"}},\"transaction_status\":\"approved\",\"validation_status\":\"success\",\"transaction_type\":\"purchase\",\"transaction_id\":\"ET114541\",\"transaction_tag\":\"55083431\",\"bank_resp_code\":\"100\",\"bank_message\":\"Approved\",\"gateway_resp_code\":\"00\",\"gateway_message\":\"Transaction Normal\",\"correlation_id\":\"124.1433862672836\"}
     RESPONSE
   end
 

@@ -1,0 +1,16 @@
+build
+clean
+clobber
+default
+gateways:hosts
+gateways:print
+gateways:print:features
+gateways:print:markdown
+gateways:print:rdoc
+gateways:print:textile
+gateways:ssl_verify
+install
+install:local
+release[remote]
+test:remote
+test:units

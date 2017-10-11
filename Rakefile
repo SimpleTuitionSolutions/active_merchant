@@ -39,6 +39,13 @@ namespace :test do
     t.libs << 'test'
     t.verbose = true
   end
+
+  Rake::TestTask.new(:remote_payeezy) do |t|
+    t.pattern = 'test/remote/gateways/*_payeezy_test.rb'
+    t.ruby_opts << '-rubygems -w'
+    t.libs << 'test'
+    t.verbose = true
+  end
 end
 
 namespace :gateways do
