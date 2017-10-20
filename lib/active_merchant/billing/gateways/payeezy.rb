@@ -19,10 +19,13 @@ module ActiveMerchant
       CREDIT_CARD_BRAND = {
         'visa' => 'Visa',
         'master' => 'Mastercard',
+        'mastercard' => 'Mastercard',
         'american_express' => 'American Express',
+        'amex' => 'American Express',
         'discover' => 'Discover',
         'jcb' => 'JCB',
-        'diners_club' => 'Diners Club'
+        'diners_club' => 'Diners Club',
+        'dinersclub' => 'Diners Club'
       }
 
       def initialize(options = {})
