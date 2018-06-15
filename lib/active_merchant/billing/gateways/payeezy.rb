@@ -110,7 +110,7 @@ module ActiveMerchant
       private
 
       def add_invoice(params, options)
-        params[:merchant_ref] = options[:order_id]
+        params[:merchant_ref] = options[:merchant_ref]
       end
 
       def amount_from_authorization(authorization)
